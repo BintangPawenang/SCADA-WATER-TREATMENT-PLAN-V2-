@@ -1,0 +1,174 @@
+plant:
+  name: Municipal Water Treatment Plant - SCADA
+  plant_id: WTP-01
+  operating_mode: SIMULATION
+  sim_control_enabled: true
+  historian:
+    sampling_interval_sec: 5
+    retention_days: 90
+    db_path: data/scada.db
+process_areas:
+  raw_water_intake:
+    name: Raw Water Intake
+    code: A
+    enabled: true
+    description: River/reservoir raw water abstraction, screening, and intake pumping
+  coagulation:
+    name: Coagulation System
+    code: B
+    enabled: true
+    description: PAC/Alum chemical storage, dosing, and rapid mixing
+  flocculation:
+    name: Flocculation System
+    code: C
+    enabled: true
+    description: Multi-stage mechanical flocculation basins
+  sedimentation:
+    name: Sedimentation / Clarification
+    code: D
+    enabled: true
+    description: Gravity clarifiers with sludge scraper and desludging pumps
+  filtration:
+    name: Filtration System
+    code: E
+    enabled: true
+    description: Rapid gravity dual-media / sand filters with air-water backwash
+  disinfection:
+    name: Disinfection System
+    code: F
+    enabled: true
+    description: Sodium hypochlorite / chlorine dosing and chlorine contact basin
+  clear_water_storage:
+    name: Clear Water Storage & Distribution
+    code: G
+    enabled: true
+    description: Treated water reservoir and high-lift distribution pumping
+  sludge_handling:
+    name: Sludge Handling
+    code: H
+    enabled: true
+    description: Sludge holding tank, transfer pumping, and dewatering
+drivers:
+- id: sim_wtp
+  name: WTP Synthetic Process Simulator
+  protocol: SIMULATION
+  enabled: true
+  poll_interval_ms: 1000
+  timeout_ms: 2000
+  stale_after_sec: 10
+  watchdog_address: SIM://SCADA_HEARTBEAT
+  description: Synthetic physics simulation for training and validation (NOT live
+    plant telemetry)
+- id: plc_intake_modbus
+  name: Intake PLC (Modbus TCP)
+  protocol: MODBUS_TCP
+  enabled: false
+  host: 192.168.10.11
+  port: 502
+  unit_id: 1
+  poll_interval_ms: 1000
+  timeout_ms: 3000
+  stale_after_sec: 15
+  watchdog_address: UNCONFIGURED://SCADA_HEARTBEAT
+  description: Requires site PLC IP, unit ID, and verified register map before enabling
+- id: plc_rtu_gw
+  name: Remote Wellfield RTU (Modbus RTU Gateway)
+  protocol: MODBUS_RTU_GATEWAY
+  enabled: false
+  host: 192.168.10.20
+  port: 4001
+  unit_id: 2
+  poll_interval_ms: 2000
+  timeout_ms: 4000
+  stale_after_sec: 20
+  description: Serial-to-Ethernet Modbus RTU gateway placeholder
+- id: opcua_process
+  name: Main Process PLC (OPC UA)
+  protocol: OPC_UA
+  enabled: false
+  endpoint: opc.tcp://192.168.10.12:4840
+  security_policy: Basic256Sha256
+  poll_interval_ms: 1000
+  timeout_ms: 3000
+  stale_after_sec: 15
+  description: OPC UA server integration placeholder - configure endpoint and certificates
+- id: mqtt_telemetry
+  name: Field Telemetry Broker (MQTT)
+  protocol: MQTT
+  enabled: false
+  broker_host: 192.168.10.30
+  broker_port: 1883
+  topic_prefix: wtp/plant01/telemetry/#
+  poll_interval_ms: 1000
+  timeout_ms: 5000
+  stale_after_sec: 30
+  description: MQTT telemetry subscriber placeholder
+- id: rest_lab_api
+  name: External Analyzer REST Poller
+  protocol: REST_API
+  enabled: false
+  base_url: http://192.168.10.40/api/v1
+  poll_interval_ms: 5000
+  timeout_ms: 3000
+  stale_after_sec: 30
+  description: REST API polling driver placeholder
+water_quality_limits:
+  specification_source: Project Operational Specification (Configurable - Adjust to
+    Local Jurisdiction)
+  parameters:
+    AIT-101_PH:
+      name: Raw Water pH
+      unit: pH
+      min_op: 6.0
+      max_op: 8.5
+      alarm_low: 5.5
+      alarm_high: 9.0
+    AIT-401_TURB:
+      name: Clarifier Effluent Turbidity
+      unit: NTU
+      min_op: 0.0
+      max_op: 5.0
+      alarm_low: null
+      alarm_high: 8.0
+    AIT-501_TURB:
+      name: Filtered Water Turbidity
+      unit: NTU
+      min_op: 0.0
+      max_op: 0.5
+      alarm_low: null
+      alarm_high: 1.0
+    AIT-601_CL2:
+      name: Free Residual Chlorine
+      unit: mg/L
+      min_op: 0.5
+      max_op: 2.0
+      alarm_low: 0.2
+      alarm_high: 3.0
+    AIT-701_PH:
+      name: Treated Water pH
+      unit: pH
+      min_op: 6.5
+      max_op: 8.5
+      alarm_low: 6.2
+      alarm_high: 8.8
+    AIT-702_COND:
+      name: Treated Water Conductivity
+      unit: uS/cm
+      min_op: 50.0
+      max_op: 800.0
+      alarm_low: null
+      alarm_high: 1000.0
+    AIT-703_TDS:
+      name: Treated Water TDS
+      unit: mg/L
+      min_op: 30.0
+      max_op: 500.0
+      alarm_low: null
+      alarm_high: 650.0
+    TIT-301_TEMP:
+      name: Process Water Temperature
+      unit: degC
+      min_op: 5.0
+      max_op: 32.0
+      alarm_low: null
+      alarm_high: 35.0

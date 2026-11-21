@@ -1,0 +1,26 @@
+# Externalized Tag & IO Mapping Overrides (Commissioning Template)
+# In SIMULATION/DEMO modes, tags stay bound to sim_wtp.
+# In PRODUCTION mode, map each tag's driver_id, source_address, 4-20mA scaling, and NAMUR NE43 checks here.
+
+production_tag_overrides:
+  FIT-101:
+    driver_id: "plc_intake_modbus"
+    source_address: "UNCONFIGURED://HRF:100"
+    namur_ne43_check: true
+    scaling:
+      enabled: false
+      raw_min: 4000.0
+      raw_max: 20000.0
+      eng_min: 0.0
+      eng_max: 1600.0
+      clamp: true
+  LIT-101:
+    driver_id: "plc_intake_modbus"
+    source_address: "UNCONFIGURED://HRF:102"
+    namur_ne43_check: true
+  AIT-501_TURB:
+    driver_id: "opcua_process"
+    source_address: "UNCONFIGURED://ns=2;s=WTP.Filtration.AIT_501_TURB"
+  AIT-601_CL2:
+    driver_id: "mqtt_telemetry"
+    source_address: "UNCONFIGURED://wtp/plant01/telemetry/AIT-601_CL2"
